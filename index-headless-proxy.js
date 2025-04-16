@@ -29,13 +29,15 @@ const startInfiniteLoop = async () => {
 };
 
 const simulatePageview = async (url, index) => {  
+  let browser = null;
+  
   try {
     await delay(randomBetween(200, 4000));
     const proxy = process.env.PS_PROXY;
     const username = process.env.PS_USERNAME;
     const password = process.env.PS_PASSWORD;
 
-    const browser = await chromium.launch({
+    browser = await chromium.launch({
       headless: true,
       proxy: {
         server: `https://${proxy}`,
@@ -76,10 +78,19 @@ const simulatePageview = async (url, index) => {
     console.log(`📜 [${index + 1}] Scrolled to bottom of ${url}`);
     await delay(randomBetween(200, 6000));
 
-    await browser.close();
-    console.log(`✅ [${index + 1}] Closed ${url}`);
+    console.log(`✅ [${index + 1}] Closing ${url}`);
   } catch (err) {
     console.error(`❌ [${index + 1}] Error on ${url}: ${err.message}`);
+  } finally {
+    // Ensure browser is always closed, even if an error occurs
+    if (browser) {
+      try {
+        await browser.close();
+        console.log(`🔒 [${index + 1}] Browser closed for ${url}`);
+      } catch (closeErr) {
+        console.error(`⚠️ [${index + 1}] Error closing browser: ${closeErr.message}`);
+      }
+    }
   }
 };
 

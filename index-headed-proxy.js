@@ -46,44 +46,47 @@ const userAgents = [
 ];
 
 async function simulatePageview(url, browserIndex) {
-    const proxy = process.env.PS_PROXY;
-    const username = process.env.PS_USERNAME;
-    const password = process.env.PS_PASSWORD;
-
-    await delay(randomBetween(100, 4000));
-    const userAgent = userAgents[randomBetween(0, userAgents.length - 1)];
-    const viewport = {
-        width: randomBetween(1200, 1600),
-        height: randomBetween(700, 1000),
-    };
-
-    console.log("=== Proxy ===", proxy, username, password)
-
-    const browser = await chromium.launch({
-        headless: false,
-        args: [`--window-size=${viewport.width},${viewport.height}`, '--ignore-certificate-errors'],
-        proxy: {
-            server: `https://${proxy}`,
-            username,
-            password,
-        }
-    });
-
-    const context = await browser.newContext({
-        userAgent,
-        viewport,
-        locale: 'en-US',
-        timezoneId: 'America/New_York',
-        geolocation: {
-            latitude: 40.7128 + Math.random() * 0.01,
-            longitude: -74.0060 + Math.random() * 0.01,
-        },
-        permissions: ['geolocation'],
-    });
-
-    const page = await context.newPage();
-
+    let browser = null;
+    let page = null;
+    
     try {
+        const proxy = process.env.PS_PROXY;
+        const username = process.env.PS_USERNAME;
+        const password = process.env.PS_PASSWORD;
+
+        await delay(randomBetween(100, 4000));
+        const userAgent = userAgents[randomBetween(0, userAgents.length - 1)];
+        const viewport = {
+            width: randomBetween(1200, 1600),
+            height: randomBetween(700, 1000),
+        };
+
+        console.log("=== Proxy ===", proxy, username, password)
+
+        browser = await chromium.launch({
+            headless: false,
+            args: [`--window-size=${viewport.width},${viewport.height}`, '--ignore-certificate-errors'],
+            proxy: {
+                server: `https://${proxy}`,
+                username,
+                password,
+            }
+        });
+
+        const context = await browser.newContext({
+            userAgent,
+            viewport,
+            locale: 'en-US',
+            timezoneId: 'America/New_York',
+            geolocation: {
+                latitude: 40.7128 + Math.random() * 0.01,
+                longitude: -74.0060 + Math.random() * 0.01,
+            },
+            permissions: ['geolocation'],
+        });
+
+        page = await context.newPage();
+
         console.log(`🔗 [Browser ${browserIndex}] Visiting ${url}`);
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
 
@@ -123,15 +126,19 @@ async function simulatePageview(url, browserIndex) {
         }
 
         await delay(5500);
-        await browser.close();
         console.log(`✅ [Browser ${browserIndex}] Done with ${url}`);
     } catch (err) {
         console.error(`❌ [Browser ${browserIndex}] Error: ${err.message}`);
-        try {
-            if (page) await page.close();
-          } catch (closeErr) {
-            console.warn(`⚠️ Could not close page: ${closeErr.message}`);
-          }        
+    } finally {
+        // Ensure browser is always closed, even if an error occurs
+        if (browser) {
+            try {
+                await browser.close();
+                console.log(`🔒 [Browser ${browserIndex}] Browser closed for ${url}`);
+            } catch (closeErr) {
+                console.error(`⚠️ [Browser ${browserIndex}] Error closing browser: ${closeErr.message}`);
+            }
+        }
     }
 }
 
@@ -164,7 +171,6 @@ async function simulatePageview(url, browserIndex) {
           console.error("Error resolving promise", err.message)
           console.error(err)
       }
-
   }
 })();
 
