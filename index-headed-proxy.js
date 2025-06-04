@@ -135,7 +135,7 @@ async function simulatePageview(url, browserIndex) {
             console.warn(`⚠️ Click failed: ${clickErr.message}`);
         }
 
-        await delay(25500);
+        await delay(6000);
         console.log(`✅ [Browser ${browserIndex}] Done with ${url}`);
     } catch (err) {
         console.error(`❌ [Browser ${browserIndex}] Error: ${err.message}`);
