@@ -54,7 +54,7 @@ async function simulatePageview(url, browserIndex) {
         const username = process.env.PS_USERNAME;
         const password = process.env.PS_PASSWORD;
 
-        await delay(randomBetween(100, 4000));
+        await delay(randomBetween(50, 5000));
         const userAgent = userAgents[randomBetween(0, userAgents.length - 1)];
         const viewport = {
             width: randomBetween(1200, 1600),
@@ -135,7 +135,7 @@ async function simulatePageview(url, browserIndex) {
             console.warn(`⚠️ Click failed: ${clickErr.message}`);
         }
 
-        await delay(6000);
+        await delay(5000);
         console.log(`✅ [Browser ${browserIndex}] Done with ${url}`);
     } catch (err) {
         console.error(`❌ [Browser ${browserIndex}] Error: ${err.message}`);
