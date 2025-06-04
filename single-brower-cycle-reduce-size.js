@@ -55,7 +55,7 @@ async function testProxy(proxy, username, password) {
     browser = await chromium.launch({ headless: true });
     context = await browser.newContext({
       proxy: {
-        server: `http://${proxy}`,
+        server: `https://${proxy}`,
         username,
         password,
       },
