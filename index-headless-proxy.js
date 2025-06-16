@@ -135,7 +135,7 @@ async function simulatePageview(url, browserIndex) {
     console.log(`=== Proxy === ${proxy}, ${username}, ${password}`);
 
     browser = await chromium.launch({
-      headless: HEADLESS,
+      headless: true,
       args: [
         `--window-size=${viewport.width},${viewport.height}`,
         "--ignore-certificate-errors",
